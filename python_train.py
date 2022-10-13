@@ -1,4 +1,6 @@
 import argparse
+import time
+
 from transformers import WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup
 from bert4keras.tokenizers import Tokenizer
 from sklearn.model_selection import KFold
@@ -17,8 +19,8 @@ import torch
 
 def train():
     output_path = os.path.join(args.output_path)
-    train_path = os.path.join(args.base_path, args.dataset, "train.json")
-    rel2id_path = os.path.join(args.base_path, args.dataset, "rel2id.json")
+    train_path = os.path.join(args.dataset, args.base_path,  "train.json")
+    rel2id_path = os.path.join(args.dataset, args.base_path,  "rel2id.json")
     log_path = os.path.join(output_path, "log.txt")
     if not os.path.exists(output_path):
         os.makedirs(output_path)
@@ -90,14 +92,14 @@ def train():
                     batch = [torch.tensor(d).to("cuda") for d in batch[:-1]]
                     batch_token_ids, batch_mask, batch_label, batch_mask_label = batch
 
-                    table = train_model(batch_token_ids, batch_mask)
+                    table = train_model(batch_token_ids, batch_mask)  # model train
                     table = table.reshape([-1, len(label_list)])
                     batch_label = batch_label.reshape([-1])
                     loss = crossentropy(table, batch_label.long())
                     loss = (loss * batch_mask_label.reshape([-1])).sum()
                     scaler.scale(loss).backward()
 
-                    table_adv = train_model(batch_token_ids, batch_mask)
+                    table_adv = train_model(batch_token_ids, batch_mask)  # model train
                     table_adv = table_adv.reshape([-1, len(label_list)])
                     loss_adv = crossentropy(table_adv, batch_label.long())
                     loss_adv = (loss_adv * batch_mask_label.reshape([-1])).sum()
@@ -125,8 +127,8 @@ def train():
 
             epoch_loss = epoch_loss / dataloader.__len__()
             with open(log_path, "a", encoding="utf-8") as f:
-                print("epoch is:%d\tloss is:%f\tf1 is:%f\tprecision is:%f\trecall is:%f\tbest_f1 is:%f\t" % (
-                    int(epoch), epoch_loss, f1, precision, recall, best_f1), file=f)
+                print("epoch is:%d\tloss is:%f\tf1 is:%f\tprecision is:%f\trecall is:%f\tbest_f1 is:%f\t %s" % (
+                    int(epoch), epoch_loss, f1, precision, recall, best_f1, time.asctime()), file=f)
 
         train_model.load_state_dict(torch.load(f"{args.output_path}/model_{fold}.pth", map_location="cuda"))
         f1, precision, recall = evaluate(args, tokenizer, id2predicate, id2label, label2id, train_model,
@@ -177,13 +179,10 @@ def evaluate(args, tokenizer, id2predicate, id2label, label2id, model, dataloade
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Model Controller')
     parser.add_argument('--rounds', default=4, type=int)
-    parser.add_argument('--k_num', default=3, type=int)
     parser.add_argument('--max_len', default=200, type=int)
-    parser.add_argument('--dataset', default='bdci', type=str)
     parser.add_argument('--batch_size', default=1, type=int)
     parser.add_argument('--val_batch_size', default=4, type=int)
     parser.add_argument('--learning_rate', default=2e-5, type=float)
-    parser.add_argument('--num_train_epochs', default=20, type=int)
     parser.add_argument('--fix_bert_embeddings', default=False, type=bool)
     parser.add_argument('--bert_vocab_path', default="pretrain_models/chinese_pretrain_mrc_macbert_large/vocab.txt", type=str)
     parser.add_argument('--pretrained_model_path', default="pretrain_models/chinese_pretrain_mrc_macbert_large", type=str)
@@ -192,7 +191,23 @@ if __name__ == '__main__':
     parser.add_argument('--max_grad_norm', default=1.0, type=float)
     parser.add_argument('--min_num', default=1e-7, type=float)
     parser.add_argument('--base_path', default="data", type=str)
-    parser.add_argument('--output_path', default="output", type=str)
-    parser.add_argument('--result_path', default="result", type=str)
+
+    ifFormal = False
+    if ifFormal:
+        parser.add_argument('--dataset', default='base', type=str)
+        parser.add_argument('--output_path', default="base/output", type=str)
+        parser.add_argument('--result_path', default="base/result", type=str)
+        parser.add_argument('--num_train_epochs', default=10, type=int)
+        parser.add_argument('--k_num', default=3, type=int)
+        parser.add_argument('--open_comment', default=True, type=bool)
+    else:
+        parser.add_argument('--dataset', default='mini', type=str)
+        parser.add_argument('--output_path', default="mini/output", type=str)
+        parser.add_argument('--result_path', default="mini/result", type=str)
+        parser.add_argument('--num_train_epochs', default=1, type=int)
+        parser.add_argument('--k_num', default=2, type=int) # at least 2
+        parser.add_argument('--open_comment', default=False, type=bool)
+
+
     args = parser.parse_args()
     train()

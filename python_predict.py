@@ -76,7 +76,7 @@ def predict():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Model Controller')
-    parser.add_argument('--dataset', default='bdci', type=str)
+    parser.add_argument('--dataset', default='data', type=str)
     parser.add_argument('--rounds', default=4, type=int)
     parser.add_argument('--test_batch_size', default=4, type=int)
     parser.add_argument('--max_len', default=200, type=int)
@@ -85,9 +85,9 @@ if __name__ == '__main__':
                         default="pretrain_models/chinese_pretrain_mrc_roberta_wwm_ext_large/vocab.txt", type=str)
     parser.add_argument('--pretrained_model_path',
                         default="pretrain_models/chinese_pretrain_mrc_roberta_wwm_ext_large", type=str)
-    parser.add_argument('--base_path', default="data", type=str)
-    parser.add_argument('--output_path', default="output", type=str)
-    parser.add_argument('--result_path', default="result", type=str)
+    parser.add_argument('--base_path', default="base", type=str)
+    parser.add_argument('--output_path', default="base/output", type=str)
+    parser.add_argument('--result_path', default="base/result", type=str)
     args = parser.parse_args()
 
     predict()

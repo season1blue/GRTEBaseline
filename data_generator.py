@@ -2,8 +2,8 @@ import json
 import re
 
 def train_generator():
-    fr = open('data/bdci/train_bdci.json', encoding='utf8').readlines()
-    fw = open('data/bdci/train.json', 'w', encoding='utf8')
+    fr = open('base/data/train_bdci.json', encoding='utf8').readlines()
+    fw = open('base/data/train.json', 'w', encoding='utf8')
 
     arr_all = []
     
@@ -115,8 +115,8 @@ def train_generator():
 
 
 def test_generator():
-    fr = open('data/bdci/evalA.json', 'r', encoding='utf8').readlines()
-    fw = open('data/bdci/test.json', 'w', encoding='utf8')
+    fr = open('base/data/evalA.json', 'r', encoding='utf8').readlines()
+    fw = open('base/data/test.json', 'w', encoding='utf8')
 
     datas = []
     for case in fr:

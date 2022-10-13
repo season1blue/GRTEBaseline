@@ -8,13 +8,13 @@ class resultGenerator:
         self.result = {}
 
     def merge_k_fold(self):
-        base_path = 'result'
+        base_path = 'base/result'
         files = os.listdir(base_path)
         total = {}
         for file in files:
             if "json" not in file:
                 continue
-            print("cuurent file:", file)
+            print("current file:", file)
             with open(os.path.join(base_path, file), 'r', encoding='utf8') as f:
                 datas = eval(f.read())
                 for k, vv in datas.items():
@@ -31,7 +31,7 @@ class resultGenerator:
                     else:
                         total[id] = spos
 
-        origin_dataset = open('data/bdci/test.json', 'r', encoding='utf8')
+        origin_dataset = open('base/data/test.json', 'r', encoding='utf8')
         origins = json.load(origin_dataset)
         self.id2text = {}
         for data in origins:
